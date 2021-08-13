@@ -4,55 +4,73 @@ import React, { useState } from "react";
 function App() {
   const [tarea, setTarea] = useState("");
   const [tareas, setTareas] = useState([]);
-//---------------------------------------------------------------
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [id, setId] = useState("");
+  const [error, setError] = useState(null)
+
+  //---------------------------------------------------------------
   const agregarTarea = (e) => {
     e.preventDefault();
-    console.log(tarea);
     if (!tarea.trim()) {
       console.log("Elemento vacio");
+      setError('Escriba algo')
       return;
     }
-    console.log(tarea);
-    setTareas([...tareas, { id: nanoid(10), NombreTarea: tarea }]);
+    setTareas([...tareas, { id: nanoid(10), nombreTarea: tarea }]);
     setTarea("");
+    setError(null)
   };
 
   //--------------------------------------------------------------
-  const eliminarTarea = id => {
+  const eliminarTarea = (id) => {
     console.log(id);
-    const arrayFiltrado = tareas.filter(item => item.id !== id)
-    setTareas(arrayFiltrado)
+    const arrayFiltrado = tareas.filter((item) => item.id !== id);
+    setTareas(arrayFiltrado);
+  };
+  //--------------------------------------------------------------
+  const editar = (item) => {
+    console.log("log editar", item);
+    setModoEdicion(true);
+    setTarea(item.nombreTarea);
+    setId(item.id);
+  };
 
-  }
+  //--------------------------------------------------------------
+  const editarTarea = (e) => {
+    e.preventDefault();
+    if (!tarea.trim()) {
+      console.log("Elemento vacio");
+      setError('Escriba algo')
+      return;
+    }
+    const arrayEditado = tareas.map((item) =>
+      item.id === id ? { id: id, nombreTarea: tarea } : item
+    );
+    console.log("log arrayEditado", arrayEditado);
+    setTareas(arrayEditado);
+    console.log("log Tareas en editarTares", tareas);
+    setModoEdicion(false);
+    setTarea("");
+    setId("");
+    setError(null)
+  };
+
+  //--------------------------------------------------------------
 
   return (
     <div className="container mt-5">
       <h1 className="text-center">CRUD simple</h1>
       <hr />
       <div className="row">
-        <div className="col-8">
-          <h4 className="text-center">Lista de tareas</h4>
-          <ul className="list-group">
-            {tareas.map((item) => (
-              <li className="list-group-item" key={item.id}>
-                <span className="lead">{item.NombreTarea}</span>
-                <button 
-                className="btn btn-danger btn-sm float-end mx-2"
-                onClick={() => eliminarTarea(item.id) }
-                >
-                  Eliminar
-                </button>
-                <button 
-                className="btn btn-warning btn-sm float-end">
-                  Editar
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="col-4">
-          <h4 className="text-center">Formulario</h4>
-          <form onSubmit={agregarTarea}>
+
+      <div className="col-12">
+          <h4 className="text-center">
+            {modoEdicion ? "Editar Tarea" : "Agregar tarea"}
+          </h4>
+          <form onSubmit={modoEdicion ? editarTarea : agregarTarea}>
+            {
+              error ? <span className="text-danger">{error}</span> : null
+            }
             <input
               type="text"
               className="form-control mb-2"
@@ -60,11 +78,49 @@ function App() {
               onChange={(e) => setTarea(e.target.value)}
               value={tarea}
             />
-            <button type="submit" className="btn btn-dark col-12">
-              Agregar
-            </button>
+            {modoEdicion ? (
+              <button type="submit" className="btn btn-warning col-12">
+                Editar
+              </button>
+            ) : (
+              <button type="submit" className="btn btn-dark col-12">
+                Agregar
+              </button>
+            )}
           </form>
         </div>
+
+
+
+
+        <div className="col-12">
+          <h4 className="text-center">Lista de tareas</h4>
+          <ul className="list-group">
+            {
+            tareas.length === 0 ? (
+              <li className="list-group-item">No hay tarea</li>
+            ) : (
+              tareas.map((item) => (
+                <li className="list-group-item" key={item.id}>
+                  <span className="lead">{item.nombreTarea}</span>
+                  <button
+                    className="btn btn-danger btn-sm float-end mx-2"
+                    onClick={() => eliminarTarea(item.id)}
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    className="btn btn-warning btn-sm float-end"
+                    onClick={() => editar(item)}
+                  >
+                    Editar
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+
       </div>
     </div>
   );
